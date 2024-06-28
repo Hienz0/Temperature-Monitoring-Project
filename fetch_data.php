@@ -15,8 +15,14 @@ if ($conn->connect_error) {
     exit();
 }
 
-// SQL query to fetch data from the table
-$sql = "SELECT temperature, humidity, date_stamp FROM stg_incremental_load_rpi ORDER BY date_stamp";
+// Get the date range from the request
+$date_range = isset($_GET['date_range']) ? $_GET['date_range'] : 7; // Default to last 7 days if not specified
+
+// Calculate the start date based on the date range
+$start_date = date('Y-m-d', strtotime("-$date_range days"));
+
+// SQL query to fetch data from the table within the date range
+$sql = "SELECT temperature, humidity, date_stamp FROM stg_incremental_load_rpi WHERE date_stamp >= '$start_date' ORDER BY date_stamp";
 $result = $conn->query($sql);
 
 // Initialize an array to store fetched data

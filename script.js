@@ -25,10 +25,11 @@ const tempHumidityChart = new Chart(ctx, {
     }
 });
 
-function fetchData() {
+function fetchData(dateRange = 7) {
     $.ajax({
         url: 'fetch_data.php',
         method: 'GET',
+        data: { date_range: dateRange },
         success: function(data) {
             const labels = data.map(item => item.date_stamp);
             const temperatures = data.map(item => item.temperature);
@@ -57,4 +58,9 @@ function fetchData() {
 
 $(document).ready(function() {
     fetchData();
+
+    $('#date-range-select').change(function() {
+        const dateRange = $(this).val();
+        fetchData(dateRange);
+    });
 });
