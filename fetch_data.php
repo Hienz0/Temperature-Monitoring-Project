@@ -16,7 +16,7 @@ if ($conn->connect_error) {
 }
 
 // SQL query to fetch data from the table
-$sql = "SELECT id_record, temperature, humidity, date_stamp, time_stamp FROM stg_incremental_load_rpi";
+$sql = "SELECT temperature, humidity, date_stamp FROM stg_incremental_load_rpi ORDER BY date_stamp";
 $result = $conn->query($sql);
 
 // Initialize an array to store fetched data

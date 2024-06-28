@@ -7,6 +7,7 @@
     <title>Temperature Monitoring</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -17,31 +18,31 @@
                 <div class="mb-3">
                     <h5>Highest Temperature</h5>
                     <p>temperature</p>
-                    <h2>31.1</h2>
+                    <h2 id="highest-temperature">31.1</h2>
                 </div>
                 <div class="mb-3">
                     <h5>Lowest Temperature</h5>
                     <p>temperature</p>
-                    <h2>-2.3</h2>
+                    <h2 id="lowest-temperature">-2.3</h2>
                 </div>
                 <div class="mb-3">
                     <h5>Highest Humidity</h5>
                     <p>humidity</p>
-                    <h2>51.1</h2>
+                    <h2 id="highest-humidity">51.1</h2>
                 </div>
                 <div class="mb-3">
                     <h5>Lowest Humidity</h5>
                     <p>humidity</p>
-                    <h2>0</h2>
+                    <h2 id="lowest-humidity">0</h2>
                 </div>
             </div>
             <div class="col-md-9">
                 <div class="d-flex justify-content-end mb-3">
-                    <select class="form-select w-auto">
+                    <select class="form-select w-auto" id="date-range-select">
                         <option selected>Select date range</option>
-                        <option value="1">Last 7 days</option>
-                        <option value="2">Last 30 days</option>
-                        <option value="3">Last 90 days</option>
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
                     </select>
                 </div>
                 <canvas id="tempHumidityChart"></canvas>
@@ -54,16 +55,16 @@
         const tempHumidityChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Mar 13', 'Mar 14', 'Mar 15', 'Mar 16', 'Mar 17', 'Mar 18', 'Mar 19', 'Mar 20', 'Mar 21'],
+                labels: [],
                 datasets: [{
                     label: 'Temperature',
-                    data: [20, 25, 30, 5, 35, 40, 32, 33, 31],
+                    data: [],
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 2
                 },
                 {
                     label: 'Humidity',
-                    data: [30, 30, 30, 0, 40, 45, 50, 48, 51],
+                    data: [],
                     borderColor: 'rgba(54, 162, 235, 1)',
                     borderWidth: 2
                 }]
@@ -75,6 +76,40 @@
                     }
                 }
             }
+        });
+
+        function fetchData() {
+            $.ajax({
+                url: 'fetch_data.php',
+                method: 'GET',
+                success: function(data) {
+                    const labels = data.map(item => item.date_stamp);
+                    const temperatures = data.map(item => item.temperature);
+                    const humidities = data.map(item => item.humidity);
+
+                    tempHumidityChart.data.labels = labels;
+                    tempHumidityChart.data.datasets[0].data = temperatures;
+                    tempHumidityChart.data.datasets[1].data = humidities;
+                    tempHumidityChart.update();
+
+                    const highestTemp = Math.max(...temperatures);
+                    const lowestTemp = Math.min(...temperatures);
+                    const highestHumidity = Math.max(...humidities);
+                    const lowestHumidity = Math.min(...humidities);
+
+                    $('#highest-temperature').text(highestTemp);
+                    $('#lowest-temperature').text(lowestTemp);
+                    $('#highest-humidity').text(highestHumidity);
+                    $('#lowest-humidity').text(lowestHumidity);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            fetchData();
         });
     </script>
 
