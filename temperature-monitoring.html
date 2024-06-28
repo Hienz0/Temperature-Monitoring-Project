@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Monitoring</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Temperature Monitoring</h1>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <h5>Highest Temperature</h5>
+                    <p>temperature</p>
+                    <h2>31.1</h2>
+                </div>
+                <div class="mb-3">
+                    <h5>Lowest Temperature</h5>
+                    <p>temperature</p>
+                    <h2>-2.3</h2>
+                </div>
+                <div class="mb-3">
+                    <h5>Highest Humidity</h5>
+                    <p>humidity</p>
+                    <h2>51.1</h2>
+                </div>
+                <div class="mb-3">
+                    <h5>Lowest Humidity</h5>
+                    <p>humidity</p>
+                    <h2>0</h2>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="d-flex justify-content-end mb-3">
+                    <select class="form-select w-auto">
+                        <option selected>Select date range</option>
+                        <option value="1">Last 7 days</option>
+                        <option value="2">Last 30 days</option>
+                        <option value="3">Last 90 days</option>
+                    </select>
+                </div>
+                <canvas id="tempHumidityChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('tempHumidityChart').getContext('2d');
+        const tempHumidityChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mar 13', 'Mar 14', 'Mar 15', 'Mar 16', 'Mar 17', 'Mar 18', 'Mar 19', 'Mar 20', 'Mar 21'],
+                datasets: [{
+                    label: 'Temperature',
+                    data: [20, 25, 30, 5, 35, 40, 32, 33, 31],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Humidity',
+                    data: [30, 30, 30, 0, 40, 45, 50, 48, 51],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
