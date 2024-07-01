@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Monitoring</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Temperature Monitoring</h1>
+        <div class="monitoring-section">
+            <div class="monitoring-item">
+                <h2>Higest Temperature</h2>
+                <p class="label">temperature</p>
+                <p id="highest-temperature" class="value">31.1</p>
+            </div>
+            <div class="monitoring-item">
+                <h2>Lowest Temperature</h2>
+                <p class="label">temperature</p>
+                <p id="lowest-temperature" class="value">-2.3</p>
+            </div>
+            <div class="monitoring-item">
+                <h2>Higest Humidity</h2>
+                <p class="label">humidity</p>
+                <p id="highest-humidity" class="value">51.1</p>
+            </div>
+            <div class="monitoring-item">
+                <h2>Lowest Humidity</h2>
+                <p class="label">humidity</p>
+                <p id="lowest-humidity" class="value">0</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <div class="filter-container">
+            <label for="date-range">Select date range:</label>
+            <select id="date-range">
+                <option value="1w">1 Week</option>
+                <option value="1m">1 Month</option>
+                <option value="1y">1 Year</option>
+            </select>
+        </div>
+        <canvas id="temperatureChart"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
