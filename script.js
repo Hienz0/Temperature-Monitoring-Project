@@ -51,15 +51,39 @@ function filterDataByRange(data, range) {
 
 // Function to update the statistics
 function updateStats(data) {
-    var highestTemp = Math.max(...data.map(row => row.temperature));
-    var lowestTemp = Math.min(...data.map(row => row.temperature));
-    var highestHumidity = Math.max(...data.map(row => row.humidity));
-    var lowestHumidity = Math.min(...data.map(row => row.humidity));
+    let highestTemp = -Infinity, lowestTemp = Infinity;
+    let highestTempDate = "", lowestTempDate = "";
+    
+    let highestHumidity = -Infinity, lowestHumidity = Infinity;
+    let highestHumidityDate = "", lowestHumidityDate = "";
+
+    data.forEach(row => {
+        if (row.temperature > highestTemp) {
+            highestTemp = row.temperature;
+            highestTempDate = row.date_stamp;
+        }
+        if (row.temperature < lowestTemp) {
+            lowestTemp = row.temperature;
+            lowestTempDate = row.date_stamp;
+        }
+        if (row.humidity > highestHumidity) {
+            highestHumidity = row.humidity;
+            highestHumidityDate = row.date_stamp;
+        }
+        if (row.humidity < lowestHumidity) {
+            lowestHumidity = row.humidity;
+            lowestHumidityDate = row.date_stamp;
+        }
+    });
 
     document.getElementById("highest-temperature").textContent = highestTemp + "°C";
+    document.getElementById("highest-temperature-date").textContent = highestTempDate;
     document.getElementById("lowest-temperature").textContent = lowestTemp + "°C";
+    document.getElementById("lowest-temperature-date").textContent = lowestTempDate;
     document.getElementById("highest-humidity").textContent = highestHumidity + "%";
+    document.getElementById("highest-humidity-date").textContent = highestHumidityDate;
     document.getElementById("lowest-humidity").textContent = lowestHumidity + "%";
+    document.getElementById("lowest-humidity-date").textContent = lowestHumidityDate;
 }
 
 // Function to draw the chart
