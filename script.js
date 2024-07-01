@@ -14,7 +14,6 @@ document.getElementById('filter-button').addEventListener('click', function() {
 
 let chart;
 
-// Function to fetch data from fetch_data.php using AJAX
 function fetchData(startDate, endDate, isFiltered = false) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
@@ -22,7 +21,9 @@ function fetchData(startDate, endDate, isFiltered = false) {
             if (this.status == 200) {
                 try {
                     var data = JSON.parse(this.responseText);
+                    console.log("Fetched data:", data);
                     var filteredData = filterDataByDateRange(data, startDate, endDate);
+                    console.log("Filtered data:", filteredData);
                     if (filteredData.length === 0 && isFiltered) {
                         displayErrorMessage("No temperature data available");
                         var defaultDateRange = getDefaultDateRange();
@@ -46,18 +47,18 @@ function fetchData(startDate, endDate, isFiltered = false) {
     xhr.send();
 }
 
-// Function to filter data based on date range
 function filterDataByDateRange(data, startDate, endDate) {
     const start = new Date(startDate);
     const end = new Date(endDate);
+    console.log("Filtering data from", startDate, "to", endDate);
 
     return data.filter(row => {
         const date = new Date(row.date_stamp);
+        console.log("Row date:", row.date_stamp, "Parsed date:", date);
         return date >= start && date <= end;
     });
 }
 
-// Function to get default date range (last 7 days)
 function getDefaultDateRange() {
     const endDate = new Date();
     const startDate = new Date();
@@ -69,32 +70,48 @@ function getDefaultDateRange() {
     };
 }
 
-// Function to update the statistics
 function updateStats(data) {
+    if (data.length === 0) return;
+
     let highestTemp = -Infinity, lowestTemp = Infinity;
     let highestTempDate = "", lowestTempDate = "";
-    
+
     let highestHumidity = -Infinity, lowestHumidity = Infinity;
     let highestHumidityDate = "", lowestHumidityDate = "";
 
     data.forEach(row => {
-        if (row.temperature > highestTemp) {
-            highestTemp = row.temperature;
-            highestTempDate = row.date_stamp;
+        const temperature = parseFloat(row.temperature);
+        const humidity = parseFloat(row.humidity);
+        const date = row.date_stamp;
+
+        console.log("Processing row:", row);
+
+        if (temperature > highestTemp) {
+            highestTemp = temperature;
+            highestTempDate = date;
+            console.log("New highest temperature:", highestTemp, "on", highestTempDate);
         }
-        if (row.temperature < lowestTemp) {
-            lowestTemp = row.temperature;
-            lowestTempDate = row.date_stamp;
+        if (temperature < lowestTemp) {
+            lowestTemp = temperature;
+            lowestTempDate = date;
+            console.log("New lowest temperature:", lowestTemp, "on", lowestTempDate);
         }
-        if (row.humidity > highestHumidity) {
-            highestHumidity = row.humidity;
-            highestHumidityDate = row.date_stamp;
+        if (humidity > highestHumidity) {
+            highestHumidity = humidity;
+            highestHumidityDate = date;
+            console.log("New highest humidity:", highestHumidity, "on", highestHumidityDate);
         }
-        if (row.humidity < lowestHumidity) {
-            lowestHumidity = row.humidity;
-            lowestHumidityDate = row.date_stamp;
+        if (humidity < lowestHumidity) {
+            lowestHumidity = humidity;
+            lowestHumidityDate = date;
+            console.log("New lowest humidity:", lowestHumidity, "on", lowestHumidityDate);
         }
     });
+
+    console.log("Final highest temperature:", highestTemp, "on", highestTempDate);
+    console.log("Final lowest temperature:", lowestTemp, "on", lowestTempDate);
+    console.log("Final highest humidity:", highestHumidity, "on", highestHumidityDate);
+    console.log("Final lowest humidity:", lowestHumidity, "on", lowestHumidityDate);
 
     document.getElementById("highest-temperature").textContent = highestTemp + "°C";
     document.getElementById("highest-temperature-date").textContent = highestTempDate;
@@ -106,11 +123,9 @@ function updateStats(data) {
     document.getElementById("lowest-humidity-date").textContent = lowestHumidityDate;
 }
 
-// Function to draw the chart
 function drawChart(data) {
     var ctx = document.getElementById('temperatureChart').getContext('2d');
 
-    // If the chart already exists, destroy it before creating a new one
     if (chart) {
         chart.destroy();
     }
@@ -153,26 +168,18 @@ function drawChart(data) {
     });
 }
 
-// Function to display error message in a modal
 function displayErrorMessage(message) {
-    // Get the modal
     var modal = document.getElementById("errorModal");
-
-    // Get the <span> element that closes the modal
     var span = document.getElementsByClassName("close")[0];
 
-    // Display the message in the modal
     document.getElementById("modal-message").textContent = message;
 
-    // Open the modal
     modal.style.display = "block";
 
-    // When the user clicks on <span> (x), close the modal
     span.onclick = function() {
         modal.style.display = "none";
     }
 
-    // When the user clicks anywhere outside of the modal, close it
     window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
@@ -180,12 +187,10 @@ function displayErrorMessage(message) {
     }
 }
 
-// Function to clear error message
 function clearErrorMessage() {
     var errorContainer = document.getElementById("data-container");
     errorContainer.innerHTML = "";
 }
 
-// Call fetchData() function to initiate data fetching and display the default chart
 var defaultDateRange = getDefaultDateRange();
 fetchData(defaultDateRange.startDate, defaultDateRange.endDate);
