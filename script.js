@@ -2,7 +2,11 @@ document.getElementById('filter-button').addEventListener('click', function() {
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
     if (startDate && endDate) {
-        fetchData(startDate, endDate);
+        if (new Date(startDate) > new Date(endDate)) {
+            displayErrorMessage("End date cannot be earlier than start date.");
+        } else {
+            fetchData(startDate, endDate, true);
+        }
     } else {
         displayErrorMessage("Please select both start and end dates.");
     }
@@ -11,7 +15,7 @@ document.getElementById('filter-button').addEventListener('click', function() {
 let chart;
 
 // Function to fetch data from fetch_data.php using AJAX
-function fetchData(startDate, endDate) {
+function fetchData(startDate, endDate, isFiltered = false) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -19,6 +23,13 @@ function fetchData(startDate, endDate) {
                 try {
                     var data = JSON.parse(this.responseText);
                     var filteredData = filterDataByDateRange(data, startDate, endDate);
+                    if (filteredData.length === 0 && isFiltered) {
+                        displayErrorMessage("No temperature data available");
+                        var defaultDateRange = getDefaultDateRange();
+                        filteredData = filterDataByDateRange(data, defaultDateRange.startDate, defaultDateRange.endDate);
+                    } else {
+                        clearErrorMessage();
+                    }
                     updateStats(filteredData);
                     drawChart(filteredData);
                 } catch (e) {
@@ -44,6 +55,18 @@ function filterDataByDateRange(data, startDate, endDate) {
         const date = new Date(row.date_stamp);
         return date >= start && date <= end;
     });
+}
+
+// Function to get default date range (last 7 days)
+function getDefaultDateRange() {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+
+    return {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0]
+    };
 }
 
 // Function to update the statistics
@@ -130,11 +153,39 @@ function drawChart(data) {
     });
 }
 
-// Function to display error message
+// Function to display error message in a modal
 function displayErrorMessage(message) {
-    var errorContainer = document.getElementById("data-container");
-    errorContainer.innerHTML = "<p class='error'>" + message + "</p>";
+    // Get the modal
+    var modal = document.getElementById("errorModal");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // Display the message in the modal
+    document.getElementById("modal-message").textContent = message;
+
+    // Open the modal
+    modal.style.display = "block";
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
 }
 
-// Call fetchData() function to initiate data fetching and display
-fetchData();
+// Function to clear error message
+function clearErrorMessage() {
+    var errorContainer = document.getElementById("data-container");
+    errorContainer.innerHTML = "";
+}
+
+// Call fetchData() function to initiate data fetching and display the default chart
+var defaultDateRange = getDefaultDateRange();
+fetchData(defaultDateRange.startDate, defaultDateRange.endDate);
