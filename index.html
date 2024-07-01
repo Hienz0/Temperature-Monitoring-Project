@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Temperature Monitoring</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
-
 </head>
 
 <body>
@@ -39,21 +38,23 @@
             </div>
         </div>
     </div>
-    
 
-    <div class="filter-container p-3 bg-light rounded shadow-sm">
-        <label for="date-range" class="form-label fw-bold">Select date range:</label>
-        <select id="date-range" class="form-select">
-            <option value="1w">1 Week</option>
-            <option value="1m">1 Month</option>
-            <option value="1y">1 Year</option>
-        </select>
+    <div class="filter-chart-container">
+        <div class="filter-container">
+            <label for="start-date" class="form-label">Start: </label>
+            <input type="date" id="start-date" class="form-select">
+
+            <label for="end-date" class="form-label">End: </label>
+            <input type="date" id="end-date" class="form-select">
+
+            <button id="filter-button" class="form-select">Search</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="temperatureChart"></canvas>
+        </div>
     </div>
 
-    <div class="chart-container">
-        
-        <canvas id="temperatureChart"></canvas>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>

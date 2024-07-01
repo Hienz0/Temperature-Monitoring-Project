@@ -1,19 +1,24 @@
-
-document.getElementById('date-range').addEventListener('change', function() {
-    fetchData(this.value);
+document.getElementById('filter-button').addEventListener('click', function() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    if (startDate && endDate) {
+        fetchData(startDate, endDate);
+    } else {
+        displayErrorMessage("Please select both start and end dates.");
+    }
 });
 
 let chart;
 
 // Function to fetch data from fetch_data.php using AJAX
-function fetchData(range = '1w') {
+function fetchData(startDate, endDate) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
             if (this.status == 200) {
                 try {
                     var data = JSON.parse(this.responseText);
-                    var filteredData = filterDataByRange(data, range);
+                    var filteredData = filterDataByDateRange(data, startDate, endDate);
                     updateStats(filteredData);
                     drawChart(filteredData);
                 } catch (e) {
@@ -31,22 +36,14 @@ function fetchData(range = '1w') {
 }
 
 // Function to filter data based on date range
-function filterDataByRange(data, range) {
-    var now = new Date();
-    var filteredData;
+function filterDataByDateRange(data, startDate, endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    if (range === '1w') {
-        var oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
-        filteredData = data.filter(row => new Date(row.date_stamp) >= oneWeekAgo);
-    } else if (range === '1m') {
-        var oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
-        filteredData = data.filter(row => new Date(row.date_stamp) >= oneMonthAgo);
-    } else if (range === '1y') {
-        var oneYearAgo = new Date(now.setFullYear(now.getFullYear() - 1));
-        filteredData = data.filter(row => new Date(row.date_stamp) >= oneYearAgo);
-    }
-
-    return filteredData;
+    return data.filter(row => {
+        const date = new Date(row.date_stamp);
+        return date >= start && date <= end;
+    });
 }
 
 // Function to update the statistics
@@ -141,4 +138,3 @@ function displayErrorMessage(message) {
 
 // Call fetchData() function to initiate data fetching and display
 fetchData();
-
