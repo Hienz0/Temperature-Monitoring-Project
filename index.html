@@ -51,8 +51,17 @@
         </div>
 
         <div class="chart-container">
-            <canvas id="temperatureChart"></canvas>
+            <label for="chart-select">Select Chart: </label>
+            <select id="chart-select">
+                <option value="temperature">Temperature</option>
+                <option value="humidity">Humidity</option>
+            </select>
+            <canvas id="myChart"></canvas>
         </div>
+        
+        
+        
+        
     </div>
 
     <div id="data-container"></div>

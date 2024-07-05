@@ -1,3 +1,5 @@
+let chart;
+
 document.getElementById('filter-button').addEventListener('click', function() {
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
@@ -5,23 +7,115 @@ document.getElementById('filter-button').addEventListener('click', function() {
         if (new Date(startDate) > new Date(endDate)) {
             displayErrorMessage("End date cannot be earlier than start date.");
         } else {
-            fetchData(startDate, endDate, true);
+            const selectedChart = document.getElementById('chart-select').value;
+            fetchDataAndDrawChart(startDate, endDate, selectedChart);
         }
     } else {
         displayErrorMessage("Please select both start and end dates.");
     }
 });
 
-let chart;
+document.getElementById('chart-select').addEventListener('change', function() {
+    const startDate = document.getElementById('start-date').value || getDefaultDateRange().startDate;
+    const endDate = document.getElementById('end-date').value || getDefaultDateRange().endDate;
+    const selectedChart = this.value;
+    fetchDataAndDrawChart(startDate, endDate, selectedChart);
+});
 
-function fetchData(startDate, endDate, isFiltered = false) {
+function fetchDataAndDrawChart(startDate, endDate, selectedChart) {
+    fetchData(startDate, endDate, true, selectedChart);
+}
+
+function drawTemperatureChart(data) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const temperatures = data.map(row => parseFloat(row.temperature));
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array(data.length).fill(''),
+            datasets: [{
+                data: temperatures,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    display: false
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)',
+                    }
+                }
+            }
+        }
+    });
+}
+
+function drawHumidityChart(data) {
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const humidity = data.map(row => parseFloat(row.humidity));
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array(data.length).fill(''),
+            datasets: [{
+                data: humidity,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    display: false
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Humidity (%)',
+                    }
+                }
+            }
+        }
+    });
+}
+
+function fetchData(startDate, endDate, isFiltered = false, selectedChart) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
             if (this.status == 200) {
                 try {
-                    var data = JSON.parse(this.responseText);
-                    console.log("Fetched data:", data);
+                    var responseText = this.responseText;
+                    console.log("Raw response text:", responseText);
+                    var data = JSON.parse(responseText);
+                    console.log("Parsed data:", data);
                     var filteredData = filterDataByDateRange(data, startDate, endDate);
                     console.log("Filtered data:", filteredData);
                     if (filteredData.length === 0 && isFiltered) {
@@ -32,7 +126,11 @@ function fetchData(startDate, endDate, isFiltered = false) {
                         clearErrorMessage();
                     }
                     updateStats(filteredData);
-                    drawChart(filteredData);
+                    if (selectedChart === 'temperature') {
+                        drawTemperatureChart(filteredData);
+                    } else if (selectedChart === 'humidity') {
+                        drawHumidityChart(filteredData);
+                    }
                 } catch (e) {
                     console.error("Error parsing JSON: ", e);
                     displayErrorMessage("Error parsing JSON data.");
@@ -123,51 +221,6 @@ function updateStats(data) {
     document.getElementById("lowest-humidity-date").textContent = lowestHumidityDate;
 }
 
-function drawChart(data) {
-    var ctx = document.getElementById('temperatureChart').getContext('2d');
-
-    if (chart) {
-        chart.destroy();
-    }
-
-    var chartData = {
-        labels: data.map(row => row.date_stamp),
-        datasets: [{
-            label: 'Temperature',
-            data: data.map(row => row.temperature),
-            borderColor: 'blue',
-            fill: false
-        }, {
-            label: 'Humidity',
-            data: data.map(row => row.humidity),
-            borderColor: 'cyan',
-            fill: false
-        }]
-    };
-
-    chart = new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Value'
-                    }
-                }
-            }
-        }
-    });
-}
-
 function displayErrorMessage(message) {
     var modal = document.getElementById("errorModal");
     var span = document.getElementsByClassName("close")[0];
@@ -192,5 +245,5 @@ function clearErrorMessage() {
     errorContainer.innerHTML = "";
 }
 
-var defaultDateRange = getDefaultDateRange();
-fetchData(defaultDateRange.startDate, defaultDateRange.endDate);
+// Fetch and draw default chart on page load
+fetchDataAndDrawChart(getDefaultDateRange().startDate, getDefaultDateRange().endDate, document.getElementById('chart-select').value);
