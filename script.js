@@ -7,8 +7,7 @@ document.getElementById('filter-button').addEventListener('click', function() {
         if (new Date(startDate) > new Date(endDate)) {
             displayErrorMessage("End date cannot be earlier than start date.");
         } else {
-            const selectedChart = document.getElementById('chart-select').value;
-            fetchDataAndDrawChart(startDate, endDate, selectedChart);
+            fetchDataAndDisplay(startDate, endDate);
         }
     } else {
         displayErrorMessage("Please select both start and end dates.");
@@ -18,12 +17,19 @@ document.getElementById('filter-button').addEventListener('click', function() {
 document.getElementById('chart-select').addEventListener('change', function() {
     const startDate = document.getElementById('start-date').value || getDefaultDateRange().startDate;
     const endDate = document.getElementById('end-date').value || getDefaultDateRange().endDate;
-    const selectedChart = this.value;
-    fetchDataAndDrawChart(startDate, endDate, selectedChart);
+    fetchDataAndDisplay(startDate, endDate);
 });
 
-function fetchDataAndDrawChart(startDate, endDate, selectedChart) {
-    fetchData(startDate, endDate, true, selectedChart);
+document.getElementById('display-select').addEventListener('change', function() {
+    const startDate = document.getElementById('start-date').value || getDefaultDateRange().startDate;
+    const endDate = document.getElementById('end-date').value || getDefaultDateRange().endDate;
+    fetchDataAndDisplay(startDate, endDate);
+});
+
+function fetchDataAndDisplay(startDate, endDate) {
+    const selectedChart = document.getElementById('chart-select').value;
+    const displayType = document.getElementById('display-select').value;
+    fetchData(startDate, endDate, true, selectedChart, displayType);
 }
 
 function drawTemperatureChart(data) {
@@ -37,7 +43,7 @@ function drawTemperatureChart(data) {
     chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: Array(data.length).fill(''),
+            labels: data.map(row => row.date_stamp),
             datasets: [{
                 data: temperatures,
                 borderColor: 'rgba(255, 99, 132, 1)',
@@ -52,7 +58,7 @@ function drawTemperatureChart(data) {
             },
             scales: {
                 x: {
-                    display: false
+                    display: true
                 },
                 y: {
                     display: true,
@@ -77,7 +83,7 @@ function drawHumidityChart(data) {
     chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: Array(data.length).fill(''),
+            labels: data.map(row => row.date_stamp),
             datasets: [{
                 data: humidity,
                 borderColor: 'rgba(54, 162, 235, 1)',
@@ -92,7 +98,7 @@ function drawHumidityChart(data) {
             },
             scales: {
                 x: {
-                    display: false
+                    display: true
                 },
                 y: {
                     display: true,
@@ -106,7 +112,37 @@ function drawHumidityChart(data) {
     });
 }
 
-function fetchData(startDate, endDate, isFiltered = false, selectedChart) {
+function renderTable(data) {
+    const tableBody = document.getElementById('data-table-body');
+    tableBody.innerHTML = ''; // Clear existing table data
+
+    data.forEach(row => {
+        const tr = document.createElement('tr');
+        const dateTd = document.createElement('td');
+        const tempTd = document.createElement('td');
+        const humidityTd = document.createElement('td');
+
+        dateTd.textContent = row.date_stamp;
+        tempTd.textContent = row.temperature + "°C";
+        humidityTd.textContent = row.humidity + "%";
+
+        tr.appendChild(dateTd);
+        tr.appendChild(tempTd);
+        tr.appendChild(humidityTd);
+
+        tableBody.appendChild(tr);
+    });
+
+    const tableWrapper = document.querySelector('.table-wrapper');
+    if (data.length > 20) {
+        tableWrapper.style.overflowY = 'auto';
+    } else {
+        tableWrapper.style.overflowY = 'hidden';
+    }
+}
+
+
+function fetchData(startDate, endDate, isFiltered = false, selectedChart, displayType) {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -126,10 +162,18 @@ function fetchData(startDate, endDate, isFiltered = false, selectedChart) {
                         clearErrorMessage();
                     }
                     updateStats(filteredData);
-                    if (selectedChart === 'temperature') {
-                        drawTemperatureChart(filteredData);
-                    } else if (selectedChart === 'humidity') {
-                        drawHumidityChart(filteredData);
+                    if (displayType === 'chart') {
+                        document.getElementById('myChart').style.display = 'block';
+                        document.getElementById('data-table').style.display = 'none';
+                        if (selectedChart === 'temperature') {
+                            drawTemperatureChart(filteredData);
+                        } else if (selectedChart === 'humidity') {
+                            drawHumidityChart(filteredData);
+                        }
+                    } else if (displayType === 'table') {
+                        document.getElementById('myChart').style.display = 'none';
+                        document.getElementById('data-table').style.display = 'block';
+                        renderTable(filteredData);
                     }
                 } catch (e) {
                     console.error("Error parsing JSON: ", e);
@@ -246,4 +290,4 @@ function clearErrorMessage() {
 }
 
 // Fetch and draw default chart on page load
-fetchDataAndDrawChart(getDefaultDateRange().startDate, getDefaultDateRange().endDate, document.getElementById('chart-select').value);
+fetchDataAndDisplay(getDefaultDateRange().startDate, getDefaultDateRange().endDate);
